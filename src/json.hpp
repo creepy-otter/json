@@ -109,7 +109,9 @@ class json {
   json(json_object&& val) : type_{json_type::JSON_OBJECT} {
     value_ = std::move(val);
   };
-  json(const json_string val) : type_{json_type::JSON_STRING} { value_ = val; };
+  json(const json_string& val) : type_{json_type::JSON_STRING} {
+    value_ = val;
+  };
   json(std::string&& val) : type_{json_type::JSON_STRING} {
     value_ = std::move(val);
   }
