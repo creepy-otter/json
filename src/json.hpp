@@ -42,7 +42,7 @@ class json {
     json_bool boolean;
 
     // default constructor (for null values)
-    json_value() { obj = nullptr; };
+    json_value() { obj = nullptr; }
     json_value(json_int val) { num_int = val; }
     json_value(json_float val) { num_float = val; }
     json_value(json_bool val) { boolean = val; }
@@ -103,6 +103,7 @@ class json {
         break;
     }
   }
+
   json(const json_object& val) : type_{json_type::JSON_OBJECT} {
     value_ = val;
   };
@@ -115,7 +116,27 @@ class json {
   json(std::string&& val) : type_{json_type::JSON_STRING} {
     value_ = std::move(val);
   }
+
   ~json() { value_.release(type_); }
+
+  template <typename CompatibleType>
+  json(const CompatibleType& val) {
+    construct_value(val);
+  }
+
+  template <typename CompatibleType>
+  json(CompatibleType&& val) {
+    construct_value(val);
+  }
+
+  template <typename CompatibleType,
+            typename std::enable_if_t<
+                std::is_constructible_v<json_string, CompatibleType>, int> = 0>
+  void construct_value(CompatibleType&& val) {
+    json_string* p = create<json_string>(std::move(val));
+    type_ = json_type::JSON_STRING;
+    value_.str = p;
+  }
 
   void debug_print() { std::cout << *value_.str << std::endl; }
 };
