@@ -114,6 +114,7 @@ class json {
     value_ = val;
   };
   json(std::string&& val) : type_{json_type::JSON_STRING} {
+    std::cout << "string move constructor called" << std::endl;
     value_ = std::move(val);
   }
 
@@ -121,19 +122,31 @@ class json {
 
   template <typename CompatibleType>
   json(const CompatibleType& val) {
+    std::cout << "Compatible constructor called" << std::endl;
     construct_value(val);
   }
 
   template <typename CompatibleType>
   json(CompatibleType&& val) {
+    std::cout << "Compatible move constructor called" << std::endl;
     construct_value(val);
   }
 
   template <typename CompatibleType,
             typename std::enable_if_t<
+                std::is_constructible_v<json_object, CompatibleType>, int> = 0>
+  void construct_value(CompatibleType&& val) {
+    std::cout << "compatible conversion called" << std::endl;
+    json_object* p = create<json_object>(std::forward<CompatibleType>(val));
+    type_ = json_type::JSON_OBJECT;
+    value_.obj = p;
+  }
+  template <typename CompatibleType,
+            typename std::enable_if_t<
                 std::is_constructible_v<json_string, CompatibleType>, int> = 0>
   void construct_value(CompatibleType&& val) {
-    json_string* p = create<json_string>(std::move(val));
+    std::cout << "compatibile conversion called" << std::endl;
+    json_string* p = create<json_string>(std::forward<CompatibleType>(val));
     type_ = json_type::JSON_STRING;
     value_.str = p;
   }

@@ -1,1 +1,1 @@
-add_executable(main main.cpp json.hpp)
+add_executable(main main.cpp json.hpp meta_helper.hpp)
