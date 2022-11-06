@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "meta_helper.hpp"
+
 namespace otter {
 
 class json {
@@ -141,6 +143,7 @@ class json {
     type_ = json_type::JSON_OBJECT;
     value_.obj = p;
   }
+
   template <typename CompatibleType,
             typename std::enable_if_t<
                 std::is_constructible_v<json_string, CompatibleType>, int> = 0>
@@ -151,7 +154,11 @@ class json {
     value_.str = p;
   }
 
-  void debug_print() { std::cout << *value_.str << std::endl; }
+  // template <typename CompatibleType, typename std::enalbe_if_t<, int> = 0>
+  // void construct_value(CompatibleType&& val) {}
+
+  void debug_print_str() { std::cout << *value_.str << std::endl; }
+  void debug_print_arr() {}
 };
 
 }  // namespace otter
