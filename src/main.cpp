@@ -7,7 +7,9 @@ template <typename T>
 using value_type_t = typename T::value_type;
 
 int main() {
-  otter::json j1 = "Hello World";
+  char str[] = "Hello World!";
+  otter::json j1 = str;
+  std::cout << "Init finished" << std::endl;
   j1.debug_print_str();
 
   /* TODO(creepy-otter): Add compatible template functions using
