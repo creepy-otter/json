@@ -3,15 +3,11 @@
 
 #include "json.hpp"
 
-template <typename T>
-using value_type_t = typename T::value_type;
-
 int main() {
-  char str[] = "Hello World!";
-  otter::json j1 = str;
-  std::cout << "Init finished" << std::endl;
+  otter::json j1 = "Hello World!";
   j1.debug_print_str();
-
+  otter::json j2 = (int64_t)42;
+  j2.debug_print_int();
   /* TODO(creepy-otter): Add compatible template functions using
    * std::enable_if to support arbitary assginment */
   return 0;

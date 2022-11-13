@@ -8,6 +8,14 @@
 #include "value_type.h"
 
 namespace otter {
+template <typename T>
+bool is_lvalue(T&) {
+  return true;
+}
+template <typename T>
+bool is_lvalue(T&&) {
+  return false;
+}
 
 class json {
  public:
@@ -99,15 +107,15 @@ class json {
   ~json() { value_.release(type_); }
 
   template <typename CompatibleType>
-  json(CompatibleType& val) {
-    internal::init_json(*this, val);
+  json(CompatibleType&& val) {
+    internal::init_json(*this, std::forward<CompatibleType>(val));
   }
 
   // template <typename CompatibleType, typename std::enalbe_if_t<, int> = 0>
   // void construct_value(CompatibleType&& val) {}
 
   void debug_print_str() { std::cout << *value_.str << std::endl; }
-  void debug_print_arr() {}
+  void debug_print_int() { std::cout << value_.num_int << std::endl; }
 };
 
 }  // namespace otter

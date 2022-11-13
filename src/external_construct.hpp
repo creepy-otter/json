@@ -8,6 +8,7 @@ namespace internal {
 template <json_type>
 struct external_constructor;
 
+/* String constructor */
 template <>
 struct external_constructor<json_type::JSON_STRING> {
   template <typename JsonType>
@@ -36,12 +37,41 @@ struct external_constructor<json_type::JSON_STRING> {
   }
 };
 
+/* Integer constructor */
+template <>
+struct external_constructor<json_type::JSON_NUMBER_INT> {
+  template <typename JsonType, typename IntegerType>
+  static void construct(JsonType& j, IntegerType num) {
+    j.value_.release(j.type_);
+    j.type_ = json_type::JSON_NUMBER_INT;
+    j.value_ = num;
+  }
+};
+
+/* Entries */
 template <typename JsonType, typename StringType,
           std::enable_if_t<std::is_constructible_v<
                                typename JsonType::json_string, StringType>,
                            int> = 0>
 void init_json(JsonType& j, const StringType& str) {
-  std::cout << typeid(str).name() << std::endl;
   external_constructor<json_type::JSON_STRING>::construct(j, str);
+}
+
+template <typename JsonType, typename StringType,
+          std::enable_if_t<std::is_constructible_v<
+                               typename JsonType::json_string, StringType>,
+                           int> = 0>
+void init_json(JsonType& j, StringType&& str) {
+  external_constructor<json_type::JSON_STRING>::construct(j, std::move(str));
+}
+
+template <typename JsonType, typename IntegerType,
+          std::enable_if_t<std::is_integral_v<IntegerType> &&
+                               !std::is_same_v<IntegerType, bool> &&
+                               !std::is_floating_point_v<IntegerType>,
+                           int> = 0>
+void init_json(JsonType& j, IntegerType num) {
+  external_constructor<json_type::JSON_NUMBER_INT>::construct(
+      j, static_cast<typename JsonType::json_int>(num));
 }
 }  // namespace internal
