@@ -48,6 +48,17 @@ struct external_constructor<json_type::JSON_NUMBER_INT> {
   }
 };
 
+/* Float constructor */
+template <>
+struct external_constructor<json_type::JSON_NUMBER_FLOAT> {
+  template <typename JsonType, typename FloatType>
+  static void construct(JsonType& j, FloatType num) {
+    j.value_.release(j.type_);
+    j.type_ = json_type::JSON_NUMBER_FLOAT;
+    j.value_ = num;
+  }
+};
+
 /* Entries */
 template <typename JsonType, typename StringType,
           std::enable_if_t<std::is_constructible_v<
@@ -73,5 +84,12 @@ template <typename JsonType, typename IntegerType,
 void init_json(JsonType& j, IntegerType num) {
   external_constructor<json_type::JSON_NUMBER_INT>::construct(
       j, static_cast<typename JsonType::json_int>(num));
+}
+
+template <typename JsonType, typename FloatType,
+          std::enable_if_t<std::is_floating_point_v<FloatType>, int> = 0>
+void init_json(JsonType& j, FloatType num) {
+  external_constructor<json_type::JSON_NUMBER_FLOAT>::construct(
+      j, static_cast<typename JsonType::json_float>(num));
 }
 }  // namespace internal

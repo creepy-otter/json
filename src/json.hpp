@@ -116,6 +116,7 @@ class json {
 
   void debug_print_str() { std::cout << *value_.str << std::endl; }
   void debug_print_int() { std::cout << value_.num_int << std::endl; }
+  void debug_print_float() { std::cout << value_.num_float << std::endl; }
 };
 
 }  // namespace otter
