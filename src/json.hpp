@@ -117,6 +117,28 @@ class json {
   void debug_print_str() { std::cout << *value_.str << std::endl; }
   void debug_print_int() { std::cout << value_.num_int << std::endl; }
   void debug_print_float() { std::cout << value_.num_float << std::endl; }
+  void debug_print() {
+    switch (type_) {
+      case json_type::JSON_NUMBER_INT:
+        std::cout << value_.num_int << std::endl;
+        break;
+      case json_type::JSON_NUMBER_FLOAT:
+        std::cout << value_.num_float << std::endl;
+        break;
+      case json_type::JSON_STRING:
+        std::cout << value_.str << std::endl;
+        break;
+      case json_type::JSON_BOOLEAN:
+        std::cout << std::boolalpha << value_.boolean << std::endl;
+        break;
+      case json_type::JSON_NULL:
+        std::cout << "null" << std::endl;
+        break;
+      default:
+        std::cout << "Array or Object Type" << std::endl;
+        break;
+    }
+  }
 };
 
 }  // namespace otter

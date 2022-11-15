@@ -59,6 +59,17 @@ struct external_constructor<json_type::JSON_NUMBER_FLOAT> {
   }
 };
 
+/* Bool constructor */
+template <>
+struct external_constructor<json_type::JSON_BOOLEAN> {
+  template <typename JsonType, typename BoolType>
+  static void construct(JsonType& j, BoolType val) {
+    j.value_.release(j.type_);
+    j.type_ = json_type::JSON_BOOLEAN;
+    j.value_ = val;
+  }
+};
+
 /* Entries */
 template <typename JsonType, typename StringType,
           std::enable_if_t<std::is_constructible_v<
@@ -91,5 +102,12 @@ template <typename JsonType, typename FloatType,
 void init_json(JsonType& j, FloatType num) {
   external_constructor<json_type::JSON_NUMBER_FLOAT>::construct(
       j, static_cast<typename JsonType::json_float>(num));
+}
+
+template <typename JsonType, typename BoolType,
+          std::enable_if_t<std::is_same_v<BoolType, bool>, int> = 0>
+void init_json(JsonType& j, BoolType val) {
+  external_constructor<json_type::JSON_BOOLEAN>::construct(
+      j, static_cast<typename JsonType::json_bool>(val));
 }
 }  // namespace internal
