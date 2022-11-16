@@ -12,6 +12,8 @@ int main() {
   j3.debug_print();
   otter::json j4 = false;
   j4.debug_print();
+  j1 = nullptr;
+  j1.debug_print();
   /* TODO(creepy-otter): Add compatible template functions using
    * std::enable_if to support arbitary assginment */
   return 0;

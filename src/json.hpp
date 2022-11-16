@@ -106,6 +106,10 @@ class json {
 
   ~json() { value_.release(type_); }
 
+  json(std::nullptr_t = nullptr) : type_(json_type::JSON_NULL) {
+    value_.obj = nullptr;
+  }
+
   template <typename CompatibleType>
   json(CompatibleType&& val) {
     internal::init_json(*this, std::forward<CompatibleType>(val));
