@@ -75,7 +75,7 @@ class json {
   json_type type_;
 
  public:
-  json() : type_{json_type::JSON_NULL} {};
+  // json() : type_{json_type::JSON_NULL} {};
   json(const json& val) : type_{val.type_} {
     switch (type_) {
       case json_type::JSON_OBJECT:
