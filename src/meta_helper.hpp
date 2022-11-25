@@ -29,3 +29,6 @@ using is_detected = typename detector<nonesuch, void, Op, Args...>::value_t;
 
 template <template <class...> class Op, class... Args>
 using detected_t = typename detector<nonesuch, void, Op, Args...>::type;
+
+/* TODO(creepy-otter): json reference for moving values from initializer_list to
+ * json array */

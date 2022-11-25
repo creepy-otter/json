@@ -1,5 +1,6 @@
 #pragma once
 
+#include <typeinfo>
 #include <unordered_map>
 #include <vector>
 
@@ -22,15 +23,17 @@ class json {
   template <typename T, typename... Args>
   static T* create(Args&&... args) {
     T* ptr = new T(std::forward<Args>(args)...);
+    std::cout << "size is: " << ptr->size() << std::endl;
     return ptr;
   }
   union json_value;
-  using json_object = std::unordered_map<std::string, json_value>;
-  using json_array = std::vector<json_value>;
+  using json_object = std::unordered_map<std::string, json>;
+  using json_array = std::vector<json>;
   using json_string = std::string;
   using json_int = int64_t;
   using json_float = float;
   using json_bool = bool;
+
   union json_value {
     /* data */
     json_object* obj;
@@ -75,35 +78,6 @@ class json {
   json_type type_;
 
  public:
-  // json() : type_{json_type::JSON_NULL} {};
-  json(const json& val) : type_{val.type_} {
-    switch (type_) {
-      case json_type::JSON_OBJECT:
-        value_ = *val.value_.obj;
-        break;
-      case json_type::JSON_ARRAY:
-        value_ = *val.value_.arr;
-        break;
-      case json_type::JSON_STRING:
-        value_ = *val.value_.str;
-        break;
-      case json_type::JSON_NUMBER_INT:
-        value_ = val.value_.num_int;
-        break;
-      case json_type::JSON_NUMBER_FLOAT:
-        value_ = val.value_.num_float;
-        break;
-      case json_type::JSON_BOOLEAN:
-        value_ = val.value_.boolean;
-        break;
-      case json_type::JSON_NULL:
-        value_.obj = nullptr;
-        break;
-      default:
-        break;
-    }
-  }
-
   ~json() { value_.release(type_); }
 
   json(std::nullptr_t = nullptr) : type_(json_type::JSON_NULL) {
@@ -111,8 +85,16 @@ class json {
   }
 
   template <typename CompatibleType>
-  json(CompatibleType&& val) {
+  json(CompatibleType&& val) noexcept {
     internal::init_json(*this, std::forward<CompatibleType>(val));
+  }
+
+  json(std::initializer_list<json> init_list) {
+    std::cout << "finish construction" << std::endl;
+    type_ = json_type::JSON_ARRAY;
+    std::cout << "start and end address: " << init_list.begin() << " "
+              << init_list.end() << std::endl;
+    value_.arr = create<json_array>(init_list.begin(), init_list.end());
   }
 
   // template <typename CompatibleType, typename std::enalbe_if_t<, int> = 0>
@@ -121,25 +103,43 @@ class json {
   void debug_print_str() { std::cout << *value_.str << std::endl; }
   void debug_print_int() { std::cout << value_.num_int << std::endl; }
   void debug_print_float() { std::cout << value_.num_float << std::endl; }
-  void debug_print() {
-    switch (type_) {
+  static void debug_print_array(const json_array& j_arr) {
+    std::cout << "[";
+    for (auto it = j_arr.begin(); it != j_arr.end(); it++) {
+      debug_print(*it, '\0');
+      if (it != j_arr.end() - 1) {
+        std::cout << ", ";
+      }
+    }
+    std::cout << "]" << std::endl;
+  }
+
+  static void debug_print(const json& j, char delim = '\n') {
+    switch (j.type_) {
       case json_type::JSON_NUMBER_INT:
-        std::cout << value_.num_int << std::endl;
+        std::cout << "int: ";
+        std::cout << j.value_.num_int << delim;
         break;
       case json_type::JSON_NUMBER_FLOAT:
-        std::cout << value_.num_float << std::endl;
+        std::cout << j.value_.num_float << delim;
         break;
       case json_type::JSON_STRING:
-        std::cout << value_.str << std::endl;
+        std::cout << *j.value_.str << delim;
         break;
       case json_type::JSON_BOOLEAN:
-        std::cout << std::boolalpha << value_.boolean << std::endl;
+        std::cout << std::boolalpha << j.value_.boolean << delim;
         break;
       case json_type::JSON_NULL:
         std::cout << "null" << std::endl;
         break;
+      case json_type::JSON_ARRAY:
+        debug_print_array(*j.value_.arr);
+        break;
+      case json_type::JSON_OBJECT:
+        std::cout << "Object Type" << std::endl;
+        break;
       default:
-        std::cout << "Array or Object Type" << std::endl;
+        std::cout << (int)(j.type_) << std::endl;
         break;
     }
   }

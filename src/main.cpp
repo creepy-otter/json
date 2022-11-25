@@ -3,17 +3,14 @@
 
 #include "json.hpp"
 
+using namespace otter;
 int main() {
-  otter::json j1 = "Hello World!";
-  j1.debug_print_str();
-  otter::json j2 = 42;
-  j2.debug_print_int();
-  otter::json j3 = 0.1;
-  j3.debug_print();
-  otter::json j4 = false;
-  j4.debug_print();
-  j1 = nullptr;
-  j1.debug_print();
+  // otter::json j5{1, 2, 3};
+  // otter::json::debug_print(j5);
+  otter::json j6 = {1, {2}};
+  std::cout << j6.value_.arr->size() << std::endl;
+  std::cout << (j6.value_.arr)[0].size() << std::endl;
+  std::cout << (j6.value_.arr)[1].size() << std::endl;
   /* TODO(creepy-otter): Add compatible template functions using
    * std::enable_if to support arbitary assginment */
   return 0;
