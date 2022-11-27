@@ -70,21 +70,13 @@ struct external_constructor<json_type::JSON_BOOLEAN> {
   }
 };
 
-/* Entries */
-template <typename JsonType, typename StringType,
-          std::enable_if_t<std::is_constructible_v<
-                               typename JsonType::json_string, StringType>,
-                           int> = 0>
-void init_json(JsonType& j, const StringType& str) {
-  external_constructor<json_type::JSON_STRING>::construct(j, str);
-}
-
 template <typename JsonType, typename StringType,
           std::enable_if_t<std::is_constructible_v<
                                typename JsonType::json_string, StringType>,
                            int> = 0>
 void init_json(JsonType& j, StringType&& str) {
-  external_constructor<json_type::JSON_STRING>::construct(j, std::move(str));
+  external_constructor<json_type::JSON_STRING>::construct(
+      j, std::forward<StringType>(str));
 }
 
 template <typename JsonType, typename IntegerType,

@@ -23,7 +23,6 @@ class json {
   template <typename T, typename... Args>
   static T* create(Args&&... args) {
     T* ptr = new T(std::forward<Args>(args)...);
-    std::cout << "size is: " << ptr->size() << std::endl;
     return ptr;
   }
   union json_value;
@@ -53,20 +52,31 @@ class json {
     json_value(const json_array& val) : arr(create<json_array>(val)) {}
     json_value(json_array&& val) : arr(create<json_array>(std::move(val))) {}
     json_value(const json_string& val) : str(create<json_string>(val)) {}
-    json_value(json_string&& val) : str(create<json_string>(std::move(val))) {}
+    json_value(json_string&& val) noexcept
+        : str(create<json_string>(std::move(val))) {}
 
+   public:
     void release(json_type t) {
       switch (t) {
         case json_type::JSON_OBJECT:
           /* TODO(creepy-otter): a temporary delete for json_object,
            * do this recursively or flatten the object */
-          if (obj != nullptr) delete obj;
+          if (obj != nullptr) {
+            delete obj;
+            obj = nullptr;
+          }
           break;
         case json_type::JSON_ARRAY:
-          if (arr != nullptr) delete arr;
+          if (arr != nullptr) {
+            delete arr;
+            arr = nullptr;
+          }
           break;
         case json_type::JSON_STRING:
-          if (str != nullptr) delete str;
+          if (str != nullptr) {
+            delete str;
+            str = nullptr;
+          }
         default:
           break;
       }
@@ -75,7 +85,7 @@ class json {
 
   /* data */
   json_value value_;
-  json_type type_;
+  json_type type_ = json_type::JSON_NULL;
 
  public:
   ~json() { value_.release(type_); }
@@ -84,23 +94,47 @@ class json {
     value_.obj = nullptr;
   }
 
+  json(const json& other) : type_(other.type_) {
+    switch (type_) {
+      case json_type::JSON_OBJECT:
+        value_ = *other.value_.obj;
+        break;
+      case json_type::JSON_ARRAY:
+        value_ = *other.value_.arr;
+        break;
+      case json_type::JSON_STRING:
+        value_ = *other.value_.str;
+        break;
+      case json_type::JSON_NUMBER_INT:
+        value_ = other.value_.num_int;
+        break;
+      case json_type::JSON_NUMBER_FLOAT:
+        value_ = other.value_.num_float;
+        break;
+      case json_type::JSON_BOOLEAN:
+        value_ = other.value_.boolean;
+        break;
+      case json_type::JSON_NULL:
+      default:
+        break;
+    }
+  }
+
+  json(json&& other) noexcept
+      : type_(std::move(other.type_)), value_(std::move(other.value_)) {
+    other.type_ = json_type::JSON_NULL;
+  }
+
   template <typename CompatibleType>
-  json(CompatibleType&& val) noexcept {
+  json(CompatibleType&& val) : type_(json_type::JSON_NULL) {
     internal::init_json(*this, std::forward<CompatibleType>(val));
   }
 
-  json(std::initializer_list<json> init_list) {
-    std::cout << "finish construction" << std::endl;
+  json(std::initializer_list<json> init_list) : type_(json_type::JSON_NULL) {
     type_ = json_type::JSON_ARRAY;
-    std::cout << "start and end address: " << init_list.begin() << " "
-              << init_list.end() << std::endl;
     value_.arr = create<json_array>(init_list.begin(), init_list.end());
   }
 
-  // template <typename CompatibleType, typename std::enalbe_if_t<, int> = 0>
-  // void construct_value(CompatibleType&& val) {}
-
-  void debug_print_str() { std::cout << *value_.str << std::endl; }
   void debug_print_int() { std::cout << value_.num_int << std::endl; }
   void debug_print_float() { std::cout << value_.num_float << std::endl; }
   static void debug_print_array(const json_array& j_arr) {
@@ -111,20 +145,19 @@ class json {
         std::cout << ", ";
       }
     }
-    std::cout << "]" << std::endl;
+    std::cout << "]";
   }
 
   static void debug_print(const json& j, char delim = '\n') {
     switch (j.type_) {
       case json_type::JSON_NUMBER_INT:
-        std::cout << "int: ";
         std::cout << j.value_.num_int << delim;
         break;
       case json_type::JSON_NUMBER_FLOAT:
         std::cout << j.value_.num_float << delim;
         break;
       case json_type::JSON_STRING:
-        std::cout << *j.value_.str << delim;
+        std::cout << '\"' << *j.value_.str << '\"' << delim;
         break;
       case json_type::JSON_BOOLEAN:
         std::cout << std::boolalpha << j.value_.boolean << delim;
